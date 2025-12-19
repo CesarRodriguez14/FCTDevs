@@ -11,9 +11,14 @@ class DAQ():
 
     def close_channel(self, _channel):
         self.instrument.write(f'ROUT:CLOSE (@{_channel})')
+
     def measure_resistance(self, _channel, _ohm_range=100000, _resolution=0.03):
         resistance = self.instrument.query(f'MEAS:RES? {_ohm_range},{_resolution}, (@{_channel})')
         return float(resistance)
+    
+    def measure_voltage(self, _channel, _voltage_range=10):
+        voltage = self.instrument.query(f'MEAS:VOLT:DC? {_voltage_range},(@{_channel})')
+        return float(voltage)
 
     def close(self):
         self.instrument.close()
