@@ -14,10 +14,10 @@ class BasicTests():
             print(log)
         return result
     
-    def led_test(self,_rgb,_max,_min):
+    def led_test(self,_rgb,_max,_min,_logFlag=False):
         result = []
         for i,color in enumerate(_rgb):
-            result.append(self.electric_test(color,_max[i],_min[i]))
+            result.append(self.electric_test(color,_max[i],_min[i],_logFlag))
         return result
             
 
