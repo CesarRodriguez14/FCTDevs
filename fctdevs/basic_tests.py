@@ -8,7 +8,8 @@ class BasicTests():
         if _min != None:
             log.append(f'MIN:{_min}\t')
             result = _val >= _min and result
-        log.append(f'VAL:{_val}')
+        log.append(f'VAL:{_val}\t')
+        log.append('OK' if result else 'NG')
         if _logFlag:
             print(log)
         return result
