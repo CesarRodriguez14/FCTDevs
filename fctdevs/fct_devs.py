@@ -1,22 +1,24 @@
 import serial
 import time as t
 import ctypes
+import pyvisa
 
 class DAQ():
-    def __init__(self, _rm, _resource_name):
-        self.instrument = _rm.open_resource(_resource_name)
+    def __init__(self, _rm:pyvisa.ResourceManager, _resource_name:str):
+        self.instrument = _rm.open_resource(_resource_name,access_mode=1,open_timeout=3000)
+            
 
-    def open_channel(self, _channel):
+    def open_channel(self, _channel:int):
         self.instrument.write(f'ROUT:OPEN (@{_channel})')
 
-    def close_channel(self, _channel):
+    def close_channel(self, _channel:int):
         self.instrument.write(f'ROUT:CLOSE (@{_channel})')
 
-    def measure_resistance(self, _channel, _ohm_range=100000, _resolution=0.03):
+    def measure_resistance(self, _channel:int, _ohm_range:int =100000, _resolution:float =0.03):
         resistance = self.instrument.query(f'MEAS:RES? {_ohm_range},{_resolution}, (@{_channel})')
         return float(resistance)
     
-    def measure_voltage(self, _channel, _voltage_range=10):
+    def measure_voltage(self, _channel:int, _voltage_range:int=10):
         voltage = self.instrument.query(f'MEAS:VOLT:DC? {_voltage_range},(@{_channel})')
         return float(voltage)
 
@@ -24,31 +26,31 @@ class DAQ():
         self.instrument.close()
 
 class PowerSource():
-    def __init__(self, _rm, resource_name):
-        self.instrument = _rm.open_resource(resource_name)
+    def __init__(self, _rm:pyvisa.ResourceManager, resource_name:str):
+        self.instrument = _rm.open_resource(resource_name,access_mode=1,open_timeout=3000)
 
-    def set_voltage(self, _voltage, _channel='CH1'):
+    def set_voltage(self, _voltage:float, _channel:str='CH1'):
         self.instrument.write(f':{_channel}:VOLTage {_voltage}')
 
-    def set_current(self, _current, _channel='CH1'):
+    def set_current(self, _current:float, _channel:str='CH1'):
         self.instrument.write(f':{_channel}:CURRent {_current}')
 
-    def on(self,_channel='CH1'):
+    def on(self,_channel:str='CH1'):
         self.instrument.write(f'OUTPut {_channel},ON')
 
-    def off(self,_channel='CH1'):
+    def off(self,_channel:str='CH1'):
         self.instrument.write(f'OUTPut {_channel},OFF')
 
-    def measure_voltage(self,_channel='CH1'):
+    def measure_voltage(self,_channel:str='CH1'):
         return float(self.instrument.query(f'MEAS:VOLT? {_channel}'))
 
-    def measure_current(self,_channel='CH1'):
+    def measure_current(self,_channel:str='CH1'):
         return float(self.instrument.query(f'MEAS:CURR? {_channel}'))    
     def close(self):
         self.instrument.close()
 
 class BlockElement():
-    def __init__(self, _canal, _daq):
+    def __init__(self, _canal:int, _daq:DAQ):
         self.canal = _canal
         self.daq = _daq
 
@@ -59,7 +61,7 @@ class BlockElement():
         self.daq.open_channel(self.canal)
 
 class ANDON():
-    def __init__(self,_canal,_daq):
+    def __init__(self,_canal:int,_daq:DAQ):
         self.canal = _canal
         self.daq = _daq
 
@@ -70,7 +72,7 @@ class ANDON():
         self.daq.open_channel(self.canal)
 
 class Relay():
-    def __init__(self,_canal,_daq):
+    def __init__(self,_canal:int,_daq:DAQ):
         self.canal = _canal
         self.daq = _daq
 
@@ -81,7 +83,7 @@ class Relay():
         self.daq.close_channel(self.canal)
 
 class Cover():
-    def __init__(self,_canal,_daq):
+    def __init__(self,_canal:int,_daq:DAQ):
         self.canal = _canal
         self.daq = _daq
     
@@ -94,33 +96,37 @@ class Cover():
             return resistance < 500
 
 class Scanner():
-    def __init__(self, _port):
+    def __init__(self, _port:str):
         self.port = _port
 
-    def set_port(self, _port):
+    def set_port(self, _port:str):
         self.port = _port
 
-    def scan_serial_HW(self, _baudrate=115200, _timeout=3):
+    def scan_serial_HW(self, _baudrate:int=115200, _timeout:int=3,_serial_len:int = 21):
         if self.port is None:
             raise ValueError("COM port not set. Please set the COM port before scanning.")
-        
-        ser = serial.Serial(port=self.port, baudrate=_baudrate, timeout=_timeout)
-        data = b'T\r\n'
-        ser.write(data)
-        serialpcb = ser.read(21).decode("utf-8")
-        ser.close()
+        try:
+            with serial.Serial(port=self.port, baudrate=_baudrate, timeout=_timeout) as ser:
+                ser.write(b'T\r\n')
+                t.sleep(1)
+                serialpcb = ser.read(_serial_len)
+                if not serialpcb:
+                    return None
+                return serialpcb.decode("utf-8")
+        except(serial.SerialException,UnicodeDecodeError):
+            return None
 
         return serialpcb
     
-    def scan_serial_trigger(self, _daq):
+    def scan_serial_trigger(self, _daq:DAQ):
         if self.port is None:
             raise ValueError("COM port not set. Please set the COM port before scanning.")
-        _daq.write(f'ROUT:CLOSE (@{self.port})')
+        _daq.write(f'ROUT:CLOSE (@{int(self.port)})')
         t.sleep(1)
-        _daq.write(f'ROUT:OPEN (@{self.port})')
+        _daq.write(f'ROUT:OPEN (@{int(self.port)})')
 
 class FEASA():
-    def __init__(self, _buffer_size=32, _port=4,_timeout=8000,_baudrate=b'57600'):
+    def __init__(self, _buffer_size:int=32, _port:int=4,_timeout:int=8000,_baudrate:bytes=b'57600'):
         self.buffer = ctypes.create_string_buffer(_buffer_size)
         self.port = _port
         self.baudrate = _baudrate
@@ -141,10 +147,10 @@ class FEASA():
         self.FeasaCom_SetResponseTimeout.restype = ctypes.c_int
         self.FeasaCom_SetResponseTimeout(_timeout)
     
-    def set_port(self, _port):
+    def set_port(self, _port:int):
         self.port = _port
 
-    def set_baudrate(self, _baudrate):
+    def set_baudrate(self, _baudrate:bytes):
         self.baudrate = _baudrate
 
     def open(self):
@@ -153,7 +159,7 @@ class FEASA():
             return False
         return True
     
-    def get_rgb(self, _fiber):
+    def get_rgb(self, _fiber:int):
         command = b'Getrgbi' + b'%02d'%_fiber
         ret = self.FeasaCom_Send(self.port,b'Capture',self.buffer)
         ret = self.FeasaCom_Send(self.port,command,self.buffer)
@@ -164,7 +170,7 @@ class FEASA():
         else:
             return None
         
-    def get_rgbs(self, _fibers):
+    def get_rgbs(self, _fibers:list):
         result = []
         for _fiber in _fibers:
             tmp = self.get_rgb(_fiber)
