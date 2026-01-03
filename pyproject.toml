@@ -7,7 +7,7 @@ name = "fctdevs"
 version = "0.2.3"
 description = "Shared FCT development utilities"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.8"
 authors = [
   { name = "CesarRodriguez", email = "cesrodflo14@hotmail.com" }
 ]
