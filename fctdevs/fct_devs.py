@@ -152,6 +152,11 @@ class FEASA():
         if result != 0:
             return False
         return True
+
+class rgbimModule():
+    def __init__(self,_valor:int,_fibras:list):
+        self.valor = _valor
+        self.fibras = _fibras
     
 class IOCard():
     OK_RESULT = "OK"
@@ -235,6 +240,27 @@ class IOCard():
             return [self.OK_RESULT,leds]
         else:
             return [self.io.io_Err(),[-1]*3]
+        
+    def rgbims(self,_modules:list):
+        leds = []
+        update_val = True 
+        
+        for module in _modules:
+            update_val = update_val and self.io.io_Update("rgbim",module.valor)
+        
+        if update_val == True:
+            for module in _modules:
+                for fibra in module.fibras:
+                    color = [
+                        self.io.io_rgbimVal(module.valor,fibra,self.INDEX_RED),
+                        self.io.io_rgbimVal(module.valor,fibra,self.INDEX_GREEN),
+                        self.io.io_rgbimVal(module.valor,fibra,self.INDEX_BLUE)]
+                    leds.append([color,f"MOD{module.valor}_FIB{fibra}"])
+                
+            return [self.OK_RESULT,leds]
+        else:
+            return [self.io.io_Err(),leds]
+        
     
 class DigitalOutputDev():
     HANDLER_DAQ = 0
