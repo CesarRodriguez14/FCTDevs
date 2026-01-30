@@ -21,6 +21,10 @@ class DAQ():
     def measure_voltage(self, _channel:int, _voltage_range:int=10):
         voltage = self.instrument.query(f'MEAS:VOLT:DC? {_voltage_range},(@{_channel})')
         return float(voltage)
+    
+    def measure_capacitance(self, _channel:int):
+        capacitance = self.instrument.query(f'MEAS:CAP? (@{_channel})')
+        return float(capacitance)
 
     def close(self):
         self.instrument.close()
@@ -146,6 +150,17 @@ class FEASA():
             else:
                 result.append(tmp)
         return result
+    
+    def get_intensity(self, _fiber:int):
+        command = b'GetIntensity' + b'%02d'%_fiber
+        ret = self.FeasaCom_Send(self.port,b'CAPTURE',self.buffer)
+        ret = self.FeasaCom_Send(self.port,command,self.buffer)
+        if ret == 1:
+            intensity = float(self.buffer.value.decode())
+            return intensity
+        else:
+            return None
+
     
     def close(self):
         result = self.FeasaCom_Close(self.port)
