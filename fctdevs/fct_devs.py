@@ -216,7 +216,7 @@ class IOCard():
         self.io.io_Update.restype = ctypes.c_bool
         self.io.io_Update.argtypes = [ctypes.c_char_p, ctypes.c_int]
 
-    def set_port(self, _port:int):
+    def set_port(self, _port:str):
             self.COM_port = _port
 
     def open(self):
