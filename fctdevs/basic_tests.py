@@ -3,13 +3,13 @@ class BasicTests():
         result = True
         log = ''
         if _max != None:
-            log.append(f'MAX:{_max}\t')
+            log += f'MAX:{_max}\t'
             result = _val <= _max and result
         if _min != None:
-            log.append(f'MIN:{_min}\t')
+            log += f'MIN:{_min}\t'
             result = _val >= _min and result
-        log.append(f'VAL:{_val}\t')
-        log.append('OK' if result else 'NG')
+        log += f'VAL:{_val}\t'
+        log += 'OK' if result else 'NG'
         if _logFlag:
             print(log)
         return result

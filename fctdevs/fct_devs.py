@@ -126,7 +126,7 @@ class FEASA():
 
     def open(self):
         result = self.FeasaCom_Open(self.port, self.baudrate)
-        if result != 0:
+        if result != 1:
             return False
         return True
     
