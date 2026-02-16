@@ -4,9 +4,16 @@ import ctypes
 import pyvisa
 
 class DAQ():
-    def __init__(self, _rm:pyvisa.ResourceManager, _resource_name:str):
-        self.instrument = _rm.open_resource(_resource_name,access_mode=1,open_timeout=3000)
-            
+    def __init__(self, _rm:pyvisa.ResourceManager, _resource_name:str, _init_Instrument:bool = True):
+        self.rm = _rm
+        self.resource_name = _resource_name
+        if _init_Instrument:
+            self.open_instrument()
+        else:
+            self.instrument = None
+
+    def open_instrument(self):
+        self.instrument = self.rm.open_resource(self.resource_name,access_mode=1,open_timeout=3000)
 
     def open_channel(self, _channel:int):
         self.instrument.write(f'ROUT:OPEN (@{_channel})')
