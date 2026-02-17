@@ -13,7 +13,11 @@ class DAQ():
             self.instrument = None
 
     def open_instrument(self):
-        self.instrument = self.rm.open_resource(self.resource_name,access_mode=1,open_timeout=3000)
+        try:
+            self.instrument = self.rm.open_resource(self.resource_name,access_mode=1,open_timeout=3000)
+        except Exception as e:
+            print(f"Error opening instrument: {e}")
+            self.instrument = None
 
     def open_channel(self, _channel:int):
         self.instrument.write(f'ROUT:OPEN (@{_channel})')
@@ -46,7 +50,11 @@ class PowerSource():
             self.instrument = None
 
     def open_instrument(self):        
-        self.instrument = self.rm.open_resource(self.resource_name,access_mode=1,open_timeout=3000)
+        try:
+            self.instrument = self.rm.open_resource(self.resource_name,access_mode=1,open_timeout=3000)
+        except Exception as e:
+            print(f"Error opening instrument: {e}")
+            self.instrument = None
 
     def set_voltage(self, _voltage:float, _channel:str='CH1'):
         self.instrument.write(f':{_channel}:VOLTage {_voltage}')
