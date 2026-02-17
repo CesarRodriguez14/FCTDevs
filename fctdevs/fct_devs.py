@@ -37,8 +37,16 @@ class DAQ():
         self.instrument.close()
 
 class PowerSource():
-    def __init__(self, _rm:pyvisa.ResourceManager, resource_name:str):
-        self.instrument = _rm.open_resource(resource_name,access_mode=1,open_timeout=3000)
+    def __init__(self, _rm:pyvisa.ResourceManager, resource_name:str, _init_Instrument:bool = True):
+        self.rm = _rm
+        self.resource_name = resource_name
+        if _init_Instrument:
+            self.open_instrument()
+        else:
+            self.instrument = None
+
+    def open_instrument(self):        
+        self.instrument = self.rm.open_resource(self.resource_name,access_mode=1,open_timeout=3000)
 
     def set_voltage(self, _voltage:float, _channel:str='CH1'):
         self.instrument.write(f':{_channel}:VOLTage {_voltage}')
