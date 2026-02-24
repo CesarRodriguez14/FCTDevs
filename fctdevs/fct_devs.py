@@ -120,11 +120,16 @@ class Scanner():
         _daq.write(f'ROUT:OPEN (@{int(self.port)})')
 
 class FEASA():
-    def __init__(self, _buffer_size:int=32, _port:int=4,_timeout:int=8000,_baudrate:bytes=b'57600'):
+    BITNESS_32_BITS = 0
+    BITNESS_64_BITS = 1
+    def __init__(self, _buffer_size:int=32, _port:int=4,_timeout:int=8000,_baudrate:bytes=b'57600',_bitness:int = BITNESS_64_BITS):
         self.buffer = ctypes.create_string_buffer(_buffer_size)
         self.port = _port
         self.baudrate = _baudrate
-        FeasaDLL = ctypes.WinDLL('feasacom64.dll')
+        if _bitness == self.BITNESS_64_BITS:
+            FeasaDLL = ctypes.WinDLL('feasacom64.dll')
+        if _bitness == self.BITNESS_32_BITS:
+            FeasaDLL = ctypes.WinDLL('feasacom.dll')
         self.FeasaCom_Open = FeasaDLL['FeasaCom_Open']
         self.FeasaCom_Open.argtypes = [ctypes.c_int, ctypes.c_char_p]
         self.FeasaCom_Open.restype = ctypes.c_int
@@ -153,36 +158,90 @@ class FEASA():
             return False
         return True
     
+    def capture(self):
+        return self.FeasaCom_Send(self.port,b'Capture',self.buffer)
+    
     def get_rgb(self, _fiber:int):
         command = b'Getrgbi' + b'%02d'%_fiber
-        ret = self.FeasaCom_Send(self.port,b'Capture',self.buffer)
+        if self.capture() == 1:
+            ret = self.FeasaCom_Send(self.port,command,self.buffer)
+            if ret == 1:
+                led = self.buffer.value.decode()
+                segments = led.split(" ")
+                try:
+                    return float(segments[0]),float(segments[1]),float(segments[2]),float(segments[3])
+                except:
+                    return -1,-1,-1,-1
+            else:
+                return None
+        else:
+            return None
+    
+    def _get_rgb(self, _fiber:int):
+        command = b'Getrgbi' + b'%02d'%_fiber
         ret = self.FeasaCom_Send(self.port,command,self.buffer)
         if ret == 1:
             led = self.buffer.value.decode()
             segments = led.split(" ")
-            return float(segments[0]),float(segments[1]),float(segments[2])
+            try:
+                    return float(segments[0]),float(segments[1]),float(segments[2]),float(segments[3])
+            except:
+                    return -1,-1,-1,-1
         else:
             return None
         
     def get_rgbs(self, _fibers:list):
         result = []
-        for _fiber in _fibers:
-            tmp = self.get_rgb(_fiber)
-            if tmp == None:
-                return None
-            else:
-                result.append(tmp)
+        if self.capture() == 1:
+            for _fiber in _fibers:
+                tmp = self._get_rgb(_fiber)
+                if tmp == None:
+                    return None
+                else:
+                    result.append(tmp)
+        else:
+            return None
         return result
     
     def get_intensity(self, _fiber:int):
         command = b'GetIntensity' + b'%02d'%_fiber
-        ret = self.FeasaCom_Send(self.port,b'CAPTURE',self.buffer)
-        ret = self.FeasaCom_Send(self.port,command,self.buffer)
-        if ret == 1:
-            intensity = float(self.buffer.value.decode())
-            return intensity
+        if self.capture() == 1:
+            ret = self.FeasaCom_Send(self.port,command,self.buffer)
+            if ret == 1:
+                try:
+                    intensity = float(self.buffer.value.decode())
+                    return intensity
+                except:
+                    return -1
+            else:
+                return None
         else:
             return None
+        
+    def _get_intensity(self, _fiber:int):
+        command = b'GetIntensity' + b'%02d'%_fiber
+        ret = self.FeasaCom_Send(self.port,command,self.buffer)
+        if ret == 1:
+            try:
+                intensity = float(self.buffer.value.decode())
+                return intensity
+            except:
+                return -1
+        else:
+            return None
+    
+    def get_intensities(self, _fibers:list):
+        result = []
+        if self.capture() == 1:
+            for _fiber in _fibers:
+                tmp = self._get_intensity(_fiber)
+                if tmp == None:
+                    return None
+                else:
+                    result.append(tmp)
+        else:
+            return None
+        return result
 
     
     def close(self):
