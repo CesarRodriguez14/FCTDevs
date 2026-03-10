@@ -96,7 +96,7 @@ class Scanner():
     def set_port(self, _port:str):
         self.port = _port
 
-    def scan_serial_HW(self, _baudrate:int=115200, _timeout:int=3,_serial_len:int = 21):
+    def scan_serial_HW(self, _baudrate:int=115200, _timeout:int=3,_serial_len:int = 21,_trigger_str = b'T\r\n'):
         if self.port is None:
             raise ValueError("COM port not set. Please set the COM port before scanning.")
         try:

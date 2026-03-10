@@ -2,9 +2,12 @@ from datetime import datetime
 import os
 
 class logFile():
-    def __init__(self,_ruta,_nombreArchivo,_header):
+    def __init__(self,_ruta,_nombreArchivo,_header,_space_date=True):
         self.ruta = _ruta
-        self.nombreArchivo = _nombreArchivo + " " + datetime.now().strftime("%Y-%m-%d") + ".csv"
+        if _space_date:
+            self.nombreArchivo = _nombreArchivo + " " + datetime.now().strftime("%Y-%m-%d") + ".csv"
+        else:
+            self.nombreArchivo = _nombreArchivo + datetime.now().strftime("%Y-%m-%d") + ".csv"
         self.header = _header
         self.numeroElementos = len(self.header)
         if not self.buscarLogFile():
