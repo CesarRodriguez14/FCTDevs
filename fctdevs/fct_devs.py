@@ -96,12 +96,12 @@ class Scanner():
     def set_port(self, _port:str):
         self.port = _port
 
-    def scan_serial_HW(self, _baudrate:int=115200, _timeout:int=3,_serial_len:int = 21,_trigger_str = b'T\r\n'):
+    def scan_serial_HW(self, _baudrate:int=115200, _timeout:int=3,_serial_len:int = 21,_trigger_str:bytes = b'T\r\n'):
         if self.port is None:
             raise ValueError("COM port not set. Please set the COM port before scanning.")
         try:
             with serial.Serial(port=self.port, baudrate=_baudrate, timeout=_timeout) as ser:
-                ser.write(b'T\r\n')
+                ser.write(_trigger_str)
                 t.sleep(1)
                 serialpcb = ser.read(_serial_len)
                 if not serialpcb:
