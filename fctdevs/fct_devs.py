@@ -36,6 +36,10 @@ class DAQ():
     def measure_capacitance(self, _channel:int):
         capacitance = self.instrument.query(f'MEAS:CAP? (@{_channel})')
         return float(capacitance)
+    
+    def measure_current(self, _channel:int, _current_range:int=1):
+        voltage = self.instrument.query(f'MEAS:CURR:DC? {_current_range},(@{_channel})')
+        return float(voltage)
 
     def close(self):
         self.instrument.close()
