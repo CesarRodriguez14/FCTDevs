@@ -367,11 +367,16 @@ class DigitalOutputDev():
     HANDLER_DAQ = 0
     HANDLER_IOCard = 1
     OK_RESULT = IOCard.OK_RESULT
+    
     def __init__(self,_modulo:int,_canal:int,_handler,_handlerType:int=HANDLER_DAQ):
         self.handlerType = _handlerType
         self.handler = _handler
         self.canal = _canal
         self.modulo = _modulo
+
+    def setCanal(self,_canal:int):
+        self.canal = _canal
+
     def setON(self):
         if self.handlerType == self.HANDLER_DAQ:
             self.handler.close_channel(self.canal)
