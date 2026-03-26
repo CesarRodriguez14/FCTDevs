@@ -80,6 +80,37 @@ class PowerSource():
     def close(self):
         self.instrument.close()
 
+class PowerSource_KeySight():
+    def __init__(self, _rm:pyvisa.ResourceManager, resource_name:str, _init_Instrument:bool = True):
+        self.rm = _rm
+        self.resource_name = resource_name
+        if _init_Instrument:
+            self.open_instrument()
+        else:
+            self.instrument = None
+
+    def open_instrument(self):        
+        try:
+            self.instrument = self.rm.open_resource(self.resource_name,access_mode=1,open_timeout=3000)
+        except Exception as e:
+            print(f"Error opening instrument: {e}")
+            self.instrument = None
+
+    def set_voltage(self, _voltage:float):
+        self.instrument.write(f'VOLT {_voltage}')
+
+    def set_current(self, _current:float):
+        self.instrument.write(f'CURR {_current}')
+
+    def on(self):
+        self.instrument.write(f'OUTP ON')
+
+    def off(self):
+        self.instrument.write(f'OUTP OFF')
+
+    def close(self):
+        self.instrument.close()
+
 class Cover():
     def __init__(self,_canal:int,_daq:DAQ):
         self.canal = _canal
