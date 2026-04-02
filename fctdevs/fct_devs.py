@@ -300,7 +300,7 @@ class IOCard():
         # str that saves COM port
         self.COM_port = None
 
-        self.io = ctypes.cdll.LoadLibrary(r".\ioportlib.dll")
+        self.io = ctypes.WinDLL("ioportlib.dll")
 
         # str = io.Err()
         self.io.io_Err.restype = ctypes.c_char_p
