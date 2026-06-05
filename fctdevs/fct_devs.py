@@ -348,21 +348,21 @@ class IOCard():
     
     def output(self,_module:int,_outCanal:int,_value:bool):
         self.io.io_dom16Val(_module,_outCanal,_value)
-        result = self.io.io_Update("dom16",_module)
+        result = self.io.io_Update("dom16".encode('utf-8'),_module)
         if result:
             return self.OK_RESULT
         else:
             return self.io.io_Err()
         
     def input(self,_module:int,_inCanal:int):
-        update_val = self.io.io_Update("dim16",_module)
+        update_val = self.io.io_Update("dim16".encode('utf-8'),_module)
         if update_val == True:
             return [self.OK_RESULT,self.io.io_dim16Val(_module,_inCanal)]
         else:
             return [self.io.io_Err(),False]
         
     def rgbim(self,_module:int,_canal:int):
-        update_val = self.io.io_Update("rgbim",_module)
+        update_val = self.io.io_Update("rgbim".encode('utf-8'),_module)
         if update_val == True:
             leds = [
                 self.io.io_rgbimVal(_module,_canal,self.INDEX_RED),
@@ -378,7 +378,7 @@ class IOCard():
         update_val = True 
         
         for module in _modules:
-            update_val = update_val and self.io.io_Update("rgbim",module.valor)
+            update_val = update_val and self.io.io_Update("rgbim".encode('utf-8'),module.valor)
         
         if update_val == True:
             for module in _modules:
@@ -427,30 +427,30 @@ class BlockElement(DigitalOutputDev):
         super().__init__(_modulo,_canal,_handler,_handlerType)
 
     def block(self):
-        self.setON()
+        return self.setON()
     
     def unblock(self):
-        self.setOFF()
+        return self.setOFF()
 
 class ANDON(DigitalOutputDev):
     def __init__(self,_modulo:int,_canal:int,_handler,_handlerType:int=DigitalOutputDev.HANDLER_DAQ):
         super().__init__(_modulo,_canal,_handler,_handlerType)
 
     def turn_on(self):
-        self.setON()
+        return self.setON()
     
     def turn_off(self):
-        self.setOFF()
+        return self.setOFF()
 
 class Relay(DigitalOutputDev):
     def __init__(self,_modulo:int,_canal:int,_handler,_handlerType:int=DigitalOutputDev.HANDLER_DAQ):
         super().__init__(_modulo,_canal,_handler,_handlerType)
 
     def energize(self):
-        self.setON()
+        return self.setON()
 
     def deenergize(self):
-        self.setOFF()
+        return self.setOFF()
 
 class PistonPisador(Relay):
     def __init__(self,_modulo:int,_canal:int,_handler,_handlerType:int=DigitalOutputDev.HANDLER_DAQ):
