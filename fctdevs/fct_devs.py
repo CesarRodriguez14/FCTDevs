@@ -102,6 +102,9 @@ class PowerSource_KeySight():
     def set_current(self, _current:float):
         self.instrument.write(f'CURR {_current}')
 
+    def measure_current(self):
+        return float(self.instrument.query('MEAS:CURR:DC?'))
+
     def on(self):
         self.instrument.write(f'OUTP ON')
 
